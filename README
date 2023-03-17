@@ -26,7 +26,7 @@ bool wll_logger_add_stream(WLL_Logger* logger, WLL_Stream* stream, WLL_Stream_Op
 ```
 
 | Parameter | Type     | Description                |
-| :-------- | :------- | :------------------------- |
+| -------- | ------- | ------------------------- |
 | `logger` | `WLL_Logger*` | Pointer to logger object. |
 | `stream` | `WLL_Stream (FILE)` | FILE pointer, often stdout. |
 | `options` | `WLL_Stream_Option (uint64_t)` | Flags for stream options.  Examples include WLL_COLOR, which enables color printing on outputs that support it. |
@@ -39,7 +39,7 @@ wll_log(LOGGER, LEVEL, MSG)
 ```
 
 | Parameter | Type     | Description                |
-| :-------- | :------- | :------------------------- |
+| -------- | ------- | ------------------------- |
 | `LOGGER` | `WLL_Logger*` | Logger to send message to. |
 | `LEVEL` | `WLL_Level (uint64_t)` | Level Flags. |
 | `MSG` | `const char*` | Message to log. |
@@ -51,7 +51,7 @@ void wll_advanced_log(WLL_Logger* logger, WLL_Level level, char* file, uint64_t 
 ```
 
 | Parameter | Type     | Description                |
-| :-------- | :------- | :------------------------- |
+| -------- | ------- | ------------------------- |
 | `logger` | `WLL_Logger*` | Logger to send message to. |
 | `level` | `WLL_Level` | Level Flags|
 | `file` | `char*` | Source File Name |
