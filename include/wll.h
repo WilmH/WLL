@@ -7,11 +7,9 @@
 #include <time.h>
 #include <string.h>
 
-#ifndef WLL_MAX_STREAM_COUNT
-    // Default allocation for number of streams in a logger, set to whatever you want.
-    // sizeof(logger) == (sizeof(uint64_t) * 2 + sizeof(FILE)) * WLL_MAX_STREAM_COUNT
-    #define WLL_MAX_STREAM_COUNT 255
-#endif
+// Default allocation for number of streams in a logger, set to whatever you want.
+// sizeof(logger) == (sizeof(uint64_t) * 2 + sizeof(FILE)) * WLL_MAX_STREAM_COUNT
+#define WLL_MAX_STREAM_COUNT 255
 
 // Bit-shifting mnemonic for making flags.  When adding a new flag, make sure it's shifted number is between 0 and 63 and unique.
 #define WLL_SHIFT(X)        (1 << (X))
@@ -43,7 +41,6 @@
 
 // Level Names
 
-#define WLL_LEVEL_COUNT     5
 #define WLL_WARN_STRING     "WARN"
 #define WLL_ERROR_STRING    "ERROR"
 #define WLL_INFO_STRING     "INFO"
@@ -70,6 +67,9 @@ struct WLL_Level_Data
         {WLL_DEBUG,     WLL_DEBUG_STRING,   WLL_CYAN},\
     }\
 
+// MUST be updated if you change the number of levels.
+#define WLL_LEVEL_COUNT     5
+
 // ---------------------------------------- //
 
 // Types //
@@ -77,7 +77,7 @@ struct WLL_Level_Data
 typedef FILE WLL_Stream;
 typedef uint64_t WLL_Stream_Option;
 
-// Logger struct, create with wll_logger_new for convenience.
+// Logger struct, create with wll_logger_new() for convenience.
 typedef struct WLL_Logger 
 {
     WLL_Stream*         streams[WLL_MAX_STREAM_COUNT];
