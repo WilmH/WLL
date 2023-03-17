@@ -8,6 +8,20 @@ A small, lightweight logging library for C/C++.
 
 - [@WilmH](https://www.github.com/WilmH) - Willem Hunt
 
+## Installation
+
+WLL is a single-header library.  To use it in your project, simply either install with cmake and include `<wll.h>` 
+
+```bash
+cmake .
+make install
+```
+
+OR copy `wll.h` into the include directory of your project.
+
+``` bash
+cp wll/include/wll.h myproject/include/
+```
 
 ## API Reference
 
