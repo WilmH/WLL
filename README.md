@@ -83,7 +83,7 @@ Redefine `WLL_MAX_STREAM_COUNT` to any valid uint64_t value to change the max nu
 The default table of levels looks like this:
 
 ```c
-#define wll_levels \
+#define WLL_LEVELS \
     (struct WLL_Level_Data[]){   \
         {WLL_WARN,      WLL_WARN_STRING,    WLL_YELLOW},\
         {WLL_ERROR,     WLL_ERROR_STRING,   WLL_RED},\
@@ -91,6 +91,7 @@ The default table of levels looks like this:
         {WLL_SUCCESS,   WLL_SUCCESS_STRING, WLL_GREEN},\
         {WLL_DEBUG,     WLL_DEBUG_STRING,   WLL_CYAN},\
     }\
+#define WLL_LEVEL_COUNT 5
 ```
 
 To modify a default level, redefine one of its constituent macros.

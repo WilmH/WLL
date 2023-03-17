@@ -58,7 +58,7 @@ struct WLL_Level_Data
 };
 
 // Level info, edit this to add custom levels
-#define wll_levels \
+#define WLL_LEVELS \
     (struct WLL_Level_Data[]){   \
         {WLL_WARN,      WLL_WARN_STRING,    WLL_YELLOW},\
         {WLL_ERROR,     WLL_ERROR_STRING,   WLL_RED},\
@@ -104,9 +104,9 @@ wll_level_string(char* buffer, WLL_Level level, WLL_Stream_Option color)
     buffer[0] = '\0';
     for(int i = 0; i < WLL_LEVEL_COUNT; i++)
     {
-        if(wll_levels[i].level == level)
+        if(WLL_LEVELS[i].level == level)
         {
-            struct WLL_Level_Data level_data = wll_levels[i];
+            struct WLL_Level_Data level_data = WLL_LEVELS[i];
 
             char* color_string;
             char* suffix_string;
