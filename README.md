@@ -24,13 +24,13 @@ cp wll/include/wll.h myproject/include/
 
 ## API Reference
 
-#### Create New Logger
+### Create New Logger
 
 ```c
 WLL_Logger wll_logger_new()
 ```
 
-#### Add New Stream to Logger
+### Add New Stream to Logger
 
 Returns a bool indicating success.
 
@@ -45,7 +45,7 @@ bool wll_logger_add_stream(WLL_Logger* logger, WLL_Stream* stream, WLL_Stream_Op
 | `options`         | `WLL_Stream_Option (uint64_t)`    | Flags for stream options.  Examples include WLL_COLOR, which enables color printing on outputs that support it. |
 | `ignored_levels`  | `WLL_Level (uint64_t)`            | Flags for ignore options, indicating which levels to skip printing for this stream.|
 
-#### Log a message (convenience macro)
+### Log a message (convenience macro)
 
 ```c
 wll_log(LOGGER, LEVEL, MSG)
@@ -57,7 +57,7 @@ wll_log(LOGGER, LEVEL, MSG)
 | `LEVEL`   | `WLL_Level (uint64_t)`    | Level Flags. |
 | `MSG`     | `const char*`             | Message to log. |
 
-#### Log a message (advanced version, use with care)
+### Log a message (advanced version, use with care)
 
 ```c
 void wll_advanced_log(WLL_Logger* logger, WLL_Level level, char* file, uint64_t line, char* message, char* datetime)
