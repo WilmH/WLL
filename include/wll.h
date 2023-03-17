@@ -9,11 +9,19 @@
 
 #ifndef WLL_MAX_STREAM_COUNT
     // Default allocation for number of streams in a logger, set to whatever you want.
+    // sizeof(logger) == (sizeof(uint64_t) * 2 + sizeof(FILE)) * WLL_MAX_STREAM_COUNT
     #define WLL_MAX_STREAM_COUNT 255
 #endif
 
-// INTERNAL bit-shifting mnemonic for making flags.
+// Bit-shifting mnemonic for making flags.  When adding a new flag, make sure it's shifted number is between 0 and 63 and unique.
 #define WLL_SHIFT(X)        (1 << (X))
+
+// Stream Options
+
+#define WLL_DEFAULT         0
+#define WLL_COLOR           WLL_SHIFT(5)
+
+// ---------------------------------------- //
 
 // Levels //
 
@@ -24,16 +32,7 @@
 #define WLL_DEBUG           WLL_SHIFT(4)
 #define WLL_ALL_LEVELS      (WLL_WARN | WLL_ERROR | WLL_INFO | WLL_DEBUG | WLL_SUCCESS)
 
-// ---------------------------------------- //
-
-// Other Options
-
-#define WLL_DEFAULT         0
-#define WLL_COLOR           WLL_SHIFT(5)
-
-// ---------------------------------------- //
-
-// Colors
+// Colors codes
 
 #define WLL_NOCOLOR         "\e[0;m"
 #define WLL_RED             "\e[0;31m" 
@@ -41,8 +40,6 @@
 #define WLL_YELLOW          "\e[0;33m"
 #define WLL_BLUE            "\e[0;34m" 
 #define WLL_CYAN            "\e[0;36m"
-
-// ---------------------------------------- //
 
 // Level Names
 
@@ -53,22 +50,9 @@
 #define WLL_SUCCESS_STRING  "SUCCESS"
 #define WLL_DEBUG_STRING    "DEBUG"
 
-// ---------------------------------------- //
-
-// Types //
-
-typedef FILE WLL_Stream;
-typedef uint64_t WLL_Stream_Option;
 typedef uint64_t WLL_Level;
 
-typedef struct WLL_Logger 
-{
-    WLL_Stream*         streams[WLL_MAX_STREAM_COUNT];
-    WLL_Stream_Option   options[WLL_MAX_STREAM_COUNT];
-    WLL_Level           ignored_levels[WLL_MAX_STREAM_COUNT];
-    uint64_t            stream_count;
-} WLL_Logger;
-
+// Internal format for storing level information including name and color.
 struct WLL_Level_Data 
 {
     WLL_Level level;
@@ -88,9 +72,32 @@ struct WLL_Level_Data
 
 // ---------------------------------------- //
 
+// Types //
+
+typedef FILE WLL_Stream;
+typedef uint64_t WLL_Stream_Option;
+
+// Logger struct, create with wll_logger_new for convenience.
+typedef struct WLL_Logger 
+{
+    WLL_Stream*         streams[WLL_MAX_STREAM_COUNT];
+    WLL_Stream_Option   options[WLL_MAX_STREAM_COUNT];
+    WLL_Level           ignored_levels[WLL_MAX_STREAM_COUNT];
+    uint64_t            stream_count;
+} WLL_Logger;
+
+// ---------------------------------------- //
+
 // Private Functions //
 
-// Writes a string representing a given level with optional color to a char*.
+/**
+ * @brief Writes a string representing a given level with optional color to a char*.
+ * 
+ * @param buffer FILE buffer to write to.
+ * @param level Level to log with.
+ * @param color Color?
+ * @return Pointer to modified string.
+ */
 char*
 wll_level_string(char* buffer, WLL_Level level, WLL_Stream_Option color)
 {
@@ -122,7 +129,11 @@ wll_level_string(char* buffer, WLL_Level level, WLL_Stream_Option color)
     return buffer;
 }
 
-// Writes a string representing the current date and time to a char*.
+/**
+ * @brief Writes a string representing the current date and time to a char*.
+ *
+ * @param datetime char* to write to.
+ */
 void 
 wll_update_datetime(char* datetime)
 {
@@ -141,7 +152,7 @@ wll_update_datetime(char* datetime)
 }
 
 /**
- * @brief Fprints log message to a given stream. Do not call directly, instead use wll_log!
+ * @brief fprints log message to a given stream. Do not call directly, instead use wll_log!
  * 
  * @param stream FILE handle
  * @param opts Stream option flags
