@@ -9,9 +9,17 @@
 
 // Default allocation for number of streams in a logger, set to whatever you want.
 // sizeof(logger) == (sizeof(uint64_t) * 2 + sizeof(FILE)) * WLL_MAX_STREAM_COUNT
-#define WLL_MAX_STREAM_COUNT 255
+#define WLL_MAX_STREAM_COUNT    256
+
+// Default max string length for level names and log messages
+#define WLL_MAX_STRING_LENGTH   256
+
+// Default max number of defined levels.  This cannot raised currently, only lowered, as uint64_t is used for Level ids.
+// TODO: find a way to make this configurable.
+#define WLL_MAX_LEVEL_COUNT     64
 
 // Bit-shifting mnemonic for making flags.  When adding a new flag, make sure it's shifted number is between 0 and 63 and unique.
+// The last default flag is equal to WLL_SHIFT(4), 5+ should be fine to use.
 #define WLL_SHIFT(X)        (1 << (X))
 
 // Stream Options
@@ -19,71 +27,48 @@
 #define WLL_DEFAULT         0
 #define WLL_COLOR           WLL_SHIFT(5)
 
-// ---------------------------------------- //
-
-// Levels //
+// Predefined Levels
 
 #define WLL_WARN            WLL_SHIFT(0)
 #define WLL_ERROR           WLL_SHIFT(1)
 #define WLL_INFO            WLL_SHIFT(2)
 #define WLL_SUCCESS         WLL_SHIFT(3)
 #define WLL_DEBUG           WLL_SHIFT(4)
-#define WLL_ALL_LEVELS      (WLL_WARN | WLL_ERROR | WLL_INFO | WLL_DEBUG | WLL_SUCCESS)
 
 // Colors codes
 
-#define WLL_NOCOLOR         "\e[0;m"
-#define WLL_RED             "\e[0;31m" 
-#define WLL_GREEN           "\e[0;32m" 
-#define WLL_YELLOW          "\e[0;33m"
-#define WLL_BLUE            "\e[0;34m" 
-#define WLL_CYAN            "\e[0;36m"
+//Convenience macro for creating new colors.  X must be a valid ANSI color number.
+#define WLL_MK_COLOR(X)         "\e[0;" #X "m"
 
-// Level Names
+#define WLL_NOCOLOR             "\e[0;m"
+#define WLL_RED                 WLL_MK_COLOR(31)
+#define WLL_GREEN               WLL_MK_COLOR(32)
+#define WLL_YELLOW              WLL_MK_COLOR(33)
+#define WLL_BLUE                WLL_MK_COLOR(34)
+#define WLL_CYAN                WLL_MK_COLOR(36)
 
-#define WLL_WARN_STRING     "WARN"
-#define WLL_ERROR_STRING    "ERROR"
-#define WLL_INFO_STRING     "INFO"
-#define WLL_SUCCESS_STRING  "SUCCESS"
-#define WLL_DEBUG_STRING    "DEBUG"
-
-typedef uint64_t WLL_Level;
+typedef FILE        WLL_Stream;
+typedef uint64_t    WLL_Stream_Option;
+typedef uint64_t    WLL_Level;
 
 // Internal format for storing level information including name and color.
-struct WLL_Level_Data 
-{
-    WLL_Level level;
-    char* string;
-    char* color_string;
-};
-
-// Level info, edit this to add custom levels
-#define WLL_LEVELS \
-    (struct WLL_Level_Data[]){   \
-        {WLL_WARN,      WLL_WARN_STRING,    WLL_YELLOW},\
-        {WLL_ERROR,     WLL_ERROR_STRING,   WLL_RED},\
-        {WLL_INFO,      WLL_INFO_STRING,    WLL_BLUE},\
-        {WLL_SUCCESS,   WLL_SUCCESS_STRING, WLL_GREEN},\
-        {WLL_DEBUG,     WLL_DEBUG_STRING,   WLL_CYAN},\
-    }\
-
-// MUST be updated if you change the number of levels.
-#define WLL_LEVEL_COUNT     5
-
-// ---------------------------------------- //
-
-// Types //
-
-typedef FILE WLL_Stream;
-typedef uint64_t WLL_Stream_Option;
+typedef struct WLL_Level_Data {
+    char        name[WLL_MAX_STRING_LENGTH];
+    char        color_code[WLL_MAX_STRING_LENGTH];
+    uint64_t    bitflag;
+} WLL_Level_Data;
 
 // Logger struct, create with wll_logger_new() for convenience.
 typedef struct WLL_Logger 
 {
     WLL_Stream*         streams[WLL_MAX_STREAM_COUNT];
-    WLL_Stream_Option   options[WLL_MAX_STREAM_COUNT];
-    WLL_Level           ignored_levels[WLL_MAX_STREAM_COUNT];
+    WLL_Stream_Option   stream_options[WLL_MAX_STREAM_COUNT];
+    WLL_Level           stream_ignored_levels[WLL_MAX_STREAM_COUNT];
     uint64_t            stream_count;
+
+    WLL_Level_Data      levels[WLL_MAX_LEVEL_COUNT];
+    uint64_t            level_count;
+
 } WLL_Logger;
 
 // ---------------------------------------- //
@@ -99,34 +84,45 @@ typedef struct WLL_Logger
  * @return Pointer to modified string.
  */
 char*
-wll_level_string(char* buffer, WLL_Level level, WLL_Stream_Option color)
+wll_level_string(char* buffer, WLL_Level_Data level_data, WLL_Stream_Option color)
 {
     buffer[0] = '\0';
-    for(int i = 0; i < WLL_LEVEL_COUNT; i++)
+    char* color_string;
+    char* suffix_string;
+
+    if(color & WLL_COLOR)
     {
-        if(WLL_LEVELS[i].level == level)
+        color_string    = level_data.color_code;
+        suffix_string   = WLL_NOCOLOR;
+    }
+    else
+    {
+        color_string    = "";
+        suffix_string   = "";
+    }
+
+    char* string = level_data.name;
+    sprintf(buffer, "%s%s%s", color_string, string, suffix_string);
+
+    return buffer;
+}
+
+/**
+ * @brief Gets level data from flag, if present.
+ * @param logger Logger
+ * @param level Level Flag
+ * @return Level data or an error value.
+ */
+WLL_Level_Data wll_logger_get_level_data(WLL_Logger logger, WLL_Level level)
+{
+    for(int i = 0; i < logger.level_count; i++)
+    {
+        if(logger.levels[i].bitflag == level)
         {
-            struct WLL_Level_Data level_data = WLL_LEVELS[i];
-
-            char* color_string;
-            char* suffix_string;
-
-            if(color & WLL_COLOR)
-            {
-                color_string = level_data.color_string;
-                suffix_string = WLL_NOCOLOR;
-            }
-            else
-            {
-                color_string = "";
-                suffix_string = "";
-            }
-
-            char* string        = level_data.string;
-            sprintf(buffer, "%s%s%s", color_string, string, suffix_string);
+            return logger.levels[i];
         }
     }
-    return buffer;
+    return (WLL_Level_Data){.bitflag=0,.color_code="",.name=""};
 }
 
 /**
@@ -164,14 +160,14 @@ wll_update_datetime(char* datetime)
  * @param datetime Datetime string
  */
 void 
-wll_internal_log_stream(WLL_Stream* stream, WLL_Stream_Option opts, WLL_Level ignored_levels, WLL_Level level, char* file, uint64_t line, char *message, char* datetime)
+wll_internal_log_stream(WLL_Stream* stream, WLL_Stream_Option opts, WLL_Level ignored_levels, WLL_Level_Data level_data, char* file, uint64_t line, char *message, char* datetime)
 {
-    if(ignored_levels & level)
+    if(ignored_levels & level_data.bitflag)
     {
         return;
     }
-    char level_string_buffer[64];
-    fprintf(stream, "%s %s:%llu [%s] - %s\n", datetime, file, line, wll_level_string(level_string_buffer, level, opts & WLL_COLOR), message);
+    char level_string_buffer[WLL_MAX_STRING_LENGTH];
+    fprintf(stream, "%s %s:%llu [%s] - %s\n", datetime, file, line, wll_level_string(level_string_buffer, level_data, opts & WLL_COLOR), message);
 }
 
 // ---------------------------------------- //
@@ -179,18 +175,64 @@ wll_internal_log_stream(WLL_Stream* stream, WLL_Stream_Option opts, WLL_Level ig
 // Public API //
 
 /**
- * @brief Creates and returns a new empty logger.
+ * @brief Add a new level to a logger.
+ * @param logger Logger
+ * @param level_name Level name.  Ex: "WARN".
+ * @param level_color_code Level color code.  Must be a string forming a valid ANSI color escape sequence.
+ * @return New level's bitflag for reference.
+ */
+WLL_Level wll_logger_add_level(WLL_Logger* logger, const char* level_name, const char* level_color_code)
+{
+    if(!logger || logger->level_count == WLL_MAX_LEVEL_COUNT)
+    {
+        return 0;
+    }
+    // TODO more error checks
+    strcpy(logger->levels[logger->level_count].name, level_name);
+    strcpy(logger->levels[logger->level_count].color_code, level_color_code);
+    logger->levels[logger->level_count].bitflag = 1 << logger->level_count++;
+    return logger->levels[logger->level_count - 1].bitflag;
+}
+
+/**
+ * @brief Creates and returns a new logger, adding default levels automatically.
  * 
  * @return logger
  */
 WLL_Logger  
 wll_logger_new()
 {
+    WLL_Logger logger = {
+        .streams                = {NULL},
+        .stream_options         = {WLL_DEFAULT},
+        .stream_ignored_levels  = {WLL_DEFAULT},
+        .stream_count           = 0,
+        .levels                 = {},
+        .level_count            = 0
+    };
+    wll_logger_add_level(&logger, "WARN", WLL_YELLOW);
+    wll_logger_add_level(&logger, "ERROR", WLL_RED);
+    wll_logger_add_level(&logger, "INFO", WLL_BLUE);
+    wll_logger_add_level(&logger, "SUCCESS", WLL_GREEN);
+    wll_logger_add_level(&logger, "DEBUG", WLL_CYAN);
+    return logger;
+}
+
+
+/**
+ * @brief Creates and returns a new empty logger.  No levels are added by default.
+ * @return new logger.
+ */
+WLL_Logger
+wll_logger_new_empty()
+{
     return (WLL_Logger){
-        .streams={NULL},
-        .options={WLL_DEFAULT},
-        .ignored_levels={WLL_DEFAULT},
-        .stream_count=0
+        .streams                = {NULL},
+        .stream_options         = {WLL_DEFAULT},
+        .stream_ignored_levels  = {WLL_DEFAULT},
+        .stream_count           = 0,
+        .levels                 = {},
+        .level_count            = 0
     };
 }
 
@@ -210,9 +252,9 @@ wll_logger_add_stream(WLL_Logger* logger, WLL_Stream* stream, WLL_Stream_Option 
     {
         return false;
     }
-    logger->streams[logger->stream_count]         = stream;
-    logger->ignored_levels[logger->stream_count]   = ignored_levels;
-    logger->options[logger->stream_count++]       = options;
+    logger->streams[logger->stream_count]                   = stream;
+    logger->stream_ignored_levels[logger->stream_count]     = ignored_levels;
+    logger->stream_options[logger->stream_count++]          = options;
     return true;
 }
 
@@ -242,7 +284,7 @@ wll_advanced_log(WLL_Logger logger, WLL_Level level, char* file, uint64_t line, 
 
     for(uint64_t i = 0; i < logger.stream_count; i++)
     {
-        wll_internal_log_stream(logger.streams[i], logger.options[i], logger.ignored_levels[i], level, file, line, message, my_datetime);
+        wll_internal_log_stream(logger.streams[i], logger.stream_options[i], logger.stream_ignored_levels[i], wll_logger_get_level_data(logger, level), file, line, message, my_datetime);
     }
 }
 
@@ -253,7 +295,7 @@ wll_advanced_log(WLL_Logger logger, WLL_Level level, char* file, uint64_t line, 
  * @param LEVEL log level
  * @param MSG log message
  */
-#define wll_log(LOGGER, LEVEL, MSG) wll_advanced_log(&LOGGER, LEVEL, __FILE__, __LINE__, MSG, NULL)
+#define wll_log(LOGGER, LEVEL, MSG) wll_advanced_log(LOGGER, LEVEL, __FILE__, __LINE__, MSG, NULL)
 
 // ---------------------------------------- //
 
