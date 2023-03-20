@@ -7,6 +7,9 @@
 #include <time.h>
 #include <string.h>
 
+#define WLL_VERSION_MAJOR @WLL_VERSION_MAJOR@
+#define WLL_VERSION_MINOR @WLL_VERSION_MINOR@
+
 // Default allocation for number of streams in a logger, set to whatever you want.
 // sizeof(logger) == (sizeof(uint64_t) * 2 + sizeof(FILE)) * WLL_MAX_STREAM_COUNT
 #define WLL_MAX_STREAM_COUNT    256
