@@ -28,6 +28,27 @@ OR copy `wll.h` into the include directory of your project.
 cp wll/include/wll.h myproject/include/
 ```
 
+## Example Usage
+
+```c
+// Create new logger object.
+WLL_Logger logger = wll_logger_new();
+
+// Add stdout as a stream with color enabled and no levels ignore.
+wll_logger_add_stream(&logger, stdout, WLL_COLOR, 0);
+
+// Add a file stream to the logger with default options and ignoring error-level messages.
+FILE *log_file = fopen("log.txt", "w");
+wlL_logger_add_stream(&logger, log_file, 0, WLL_ERROR);
+
+// Send message at warning level.  Will print in color to stdout and without color to file_open.
+wll_log(logger, WLL_WARN, "Warning!");
+
+// Send message at error level.  Will print in color to stdout and will not print to file_open.
+wll_log(logger, WLL_ERROR, "Error!");
+
+```
+
 ## API Reference
 
 ### Create New Logger
