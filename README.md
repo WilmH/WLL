@@ -54,7 +54,7 @@ wll_log(LOGGER, LEVEL, MSG)
 
 | Parameter | Type                      | Description                |
 | --------  | -------                   | ------------------------- |
-| `LOGGER`  | `WLL_Logger*`             | Logger to send message to. |
+| `LOGGER`  | `WLL_Logger`              | Logger to send message to. |
 | `LEVEL`   | `WLL_Level (uint64_t)`    | Level Flags. |
 | `MSG`     | `const char*`             | Message to log. |
 
@@ -66,7 +66,7 @@ void wll_advanced_log(WLL_Logger* logger, WLL_Level level, char* file, uint64_t 
 
 | Parameter     | Type          | Description                |
 | --------      | -------       | ------------------------- |
-| `logger`      | `WLL_Logger*` | Logger to send message to. |
+| `logger`      | `WLL_Logger`  | Logger to send message to. |
 | `level`       | `WLL_Level`   | Level Flags|
 | `file`        | `char*`       | Source File Name |
 | `line`        | `uint64_t`    | Source File Line Number |
