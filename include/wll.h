@@ -253,7 +253,7 @@ wll_advanced_log(WLL_Logger* logger, WLL_Level level, char* file, uint64_t line,
  * @param LEVEL log level
  * @param MSG log message
  */
-#define wll_log(LOGGER, LEVEL, MSG) wll_advanced_log(LOGGER, LEVEL, __FILE__, __LINE__, MSG, NULL)
+#define wll_log(LOGGER, LEVEL, MSG) wll_advanced_log(&LOGGER, LEVEL, __FILE__, __LINE__, MSG, NULL)
 
 // ---------------------------------------- //
 
