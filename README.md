@@ -3,6 +3,7 @@
 
 A small, lightweight single-header logging library for C/C++.  Makes no allocations, has no external dependencies, and is easy to configure or extend.
 
+Developed for Unix-like environments, but *should* work on Windows as well.
 ## Authors
 
 - [@WilmH](https://www.github.com/WilmH) - Willem Hunt
@@ -72,7 +73,7 @@ void wll_advanced_log(WLL_Logger* logger, WLL_Level level, char* file, uint64_t 
 | `message`     | `char*`       | Message to log. |
 | `datetime`    | `char*`       | String representing current datetime. |
 
-## Configuring WLL
+## Configuring and Extending WLL
 
 ### Max Stream Count
 
@@ -98,7 +99,7 @@ To modify a default level, redefine one of its constituent macros.
 
 To *add* a level, you'll need to:
 - define its name, flag value, and color code.
-- add it to the wll_levels list.
+- add it to the WLL_LEVELS list.
 - update WLL_LEVEL_COUNT to reflect your changes.
 
 #### Flag Values
