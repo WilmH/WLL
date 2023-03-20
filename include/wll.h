@@ -227,7 +227,7 @@ wll_logger_add_stream(WLL_Logger* logger, WLL_Stream* stream, WLL_Stream_Option 
  * @param datetime Custom datetime string.  Pass NULL to use WLL's datetime.
  */
 void 
-wll_advanced_log(WLL_Logger* logger, WLL_Level level, char* file, uint64_t line, char* message, char* datetime)
+wll_advanced_log(WLL_Logger logger, WLL_Level level, char* file, uint64_t line, char* message, char* datetime)
 {
     char my_datetime[64];
     
@@ -240,9 +240,9 @@ wll_advanced_log(WLL_Logger* logger, WLL_Level level, char* file, uint64_t line,
         strcpy(my_datetime, datetime);
     }
 
-    for(uint64_t i = 0; i < logger->stream_count; i++)
+    for(uint64_t i = 0; i < logger.stream_count; i++)
     {
-        wll_internal_log_stream(logger->streams[i], logger->options[i], logger->ignored_levels[i], level, file, line, message, my_datetime);
+        wll_internal_log_stream(logger.streams[i], logger.options[i], logger.ignored_levels[i], level, file, line, message, my_datetime);
     }
 }
 
