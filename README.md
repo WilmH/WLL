@@ -98,7 +98,7 @@ WLL_Level wll_logger_add_level(WLL_Logger* logger, const char* level_name, const
 ### Log a Message (convenience macro)
 
 ```c
-wll_log(LOGGER, LEVEL, MSG)
+bool wll_log(LOGGER, LEVEL, MSG)
 ```
 
 | Parameter | Type                      | Description                |
@@ -110,7 +110,7 @@ wll_log(LOGGER, LEVEL, MSG)
 ### Log a message (advanced version, use with care)
 
 ```c
-void wll_advanced_log(WLL_Logger* logger, WLL_Level level, char* file, uint64_t line, char* message, char* datetime)
+bool wll_advanced_log(WLL_Logger* logger, WLL_Level level, char* file, uint64_t line, char* message, char* datetime)
 ```
 
 | Parameter     | Type          | Description                |

@@ -123,7 +123,8 @@ wll_level_string(char* buffer, WLL_Level_Data level_data, WLL_Stream_Option colo
  * @param level Level Flag
  * @return Level data or an error value.
  */
-WLL_Level_Data wll_logger_get_level_data(WLL_Logger logger, WLL_Level level)
+WLL_Level_Data 
+wll_logger_get_level_data(WLL_Logger logger, WLL_Level level)
 {
     for(int i = 0; i < logger.level_count; i++)
     {
@@ -191,7 +192,8 @@ wll_internal_log_stream(WLL_Stream* stream, WLL_Stream_Option opts, WLL_Level ig
  * @param level_color_code Level color code.  Must be a string forming a valid ANSI color escape sequence.
  * @return New level's bitflag for reference.
  */
-WLL_Level wll_logger_add_level(WLL_Logger* logger, const char* level_name, const char* level_color_code)
+WLL_Level 
+wll_logger_add_level(WLL_Logger* logger, const char* level_name, const char* level_color_code)
 {
     if(!logger)
     {
