@@ -4,9 +4,14 @@
 A small, lightweight single-header logging library for C/C++.  Makes no allocations, has no external dependencies, and is easy to configure or extend.
 
 Developed for Unix-like environments, but *should* work on Windows as well.
+
 ## Authors
 
 - [@WilmH](https://www.github.com/WilmH) - Willem Hunt
+
+## License
+
+[MIT](https://choosealicense.com/licenses/mit/)
 
 ## Installation
 
@@ -150,6 +155,5 @@ Colors are defined as a string representing the ANSI control codes for that colo
 
 Any ANSI color escape code can be used, depending on terminal support.  For more info on ANSI color codes, see this [page](https://en.wikipedia.org/wiki/ANSI_escape_code#Colors).
 
-
-
-
+## Todo
+- Refine the process of customizing and adding levels.
