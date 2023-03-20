@@ -2,6 +2,7 @@
 #define WLL_H
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
 #include <time.h>
@@ -38,8 +39,6 @@
 #define WLL_SUCCESS         WLL_SHIFT(3)
 #define WLL_DEBUG           WLL_SHIFT(4)
 
-// Colors codes
-
 //Convenience macro for creating new colors.  X must be a valid ANSI color number.
 #define WLL_MK_COLOR(X)         "\e[0;" #X "m"
 
@@ -49,6 +48,8 @@
 #define WLL_YELLOW              WLL_MK_COLOR(33)
 #define WLL_BLUE                WLL_MK_COLOR(34)
 #define WLL_CYAN                WLL_MK_COLOR(36)
+
+/// Types///
 
 typedef FILE        WLL_Stream;
 typedef uint64_t    WLL_Stream_Option;
@@ -89,6 +90,12 @@ typedef struct WLL_Logger
 char*
 wll_level_string(char* buffer, WLL_Level_Data level_data, WLL_Stream_Option color)
 {
+
+    if(!buffer)
+    {
+        return NULL;
+    }
+
     buffer[0] = '\0';
     char* color_string;
     char* suffix_string;
@@ -186,11 +193,24 @@ wll_internal_log_stream(WLL_Stream* stream, WLL_Stream_Option opts, WLL_Level ig
  */
 WLL_Level wll_logger_add_level(WLL_Logger* logger, const char* level_name, const char* level_color_code)
 {
-    if(!logger || logger->level_count == WLL_MAX_LEVEL_COUNT)
+    if(!logger)
     {
+        fprintf(stderr, "WLL: Logger is NULL, can't add level!\n");
         return 0;
     }
-    // TODO more error checks
+
+    if(logger->level_count == WLL_MAX_LEVEL_COUNT)
+    {
+        fprintf(stderr, "WLL: Max level count exceeded\n");
+        return 0;
+    }
+
+    if(strlen(level_name) >= WLL_MAX_STRING_LENGTH)
+    {
+        fprintf(stderr, "WLL: Level name exceeds max string length (%d vs %d)", strlen(level_name), WLL_MAX_STRING_LENGTH);
+        return 0;
+    }
+
     strcpy(logger->levels[logger->level_count].name, level_name);
     strcpy(logger->levels[logger->level_count].color_code, level_color_code);
     logger->levels[logger->level_count].bitflag = 1 << logger->level_count++;
@@ -271,11 +291,35 @@ wll_logger_add_stream(WLL_Logger* logger, WLL_Stream* stream, WLL_Stream_Option 
  * @param message log message
  * @param datetime Custom datetime string.  Pass NULL to use WLL's datetime.
  */
-void 
+bool 
 wll_advanced_log(WLL_Logger logger, WLL_Level level, char* file, uint64_t line, char* message, char* datetime)
 {
+
+    if(!file)
+    {
+        fprintf(stderr, "WLL: Unable to add NULL stream.\n");
+        return false;
+    }
+
+    if(!message)
+    {
+        fprintf(stderr, "WLL: Unable to print NULL message.\n");
+        return false;
+    }
+
+    if(!datetime)
+    {
+        fprintf(stderr, "WLL: Unable to print NULL datetime string.\n");
+        return false;
+    }
+
+    if(strlen(message) >= WLL_MAX_STRING_LENGTH)
+    {
+        fprintf(stderr, "WLL: Message length exceeds max (%d vs %d)\n", strlen(message), WLL_MAX_STRING_LENGTH);
+        return false;
+    }
+
     char my_datetime[64];
-    
     if(!datetime)
     {
         wll_update_datetime(my_datetime);
@@ -285,10 +329,19 @@ wll_advanced_log(WLL_Logger logger, WLL_Level level, char* file, uint64_t line, 
         strcpy(my_datetime, datetime);
     }
 
+    WLL_Level_Data level_data = wll_logger_get_level_data(logger, level);
+    if(level_data.bitflag == 0)
+    {
+        fprintf(stderr, "WLL: Matching level not found.\n");
+        return false;
+    }
+
     for(uint64_t i = 0; i < logger.stream_count; i++)
     {
-        wll_internal_log_stream(logger.streams[i], logger.stream_options[i], logger.stream_ignored_levels[i], wll_logger_get_level_data(logger, level), file, line, message, my_datetime);
+        wll_internal_log_stream(logger.streams[i], logger.stream_options[i], logger.stream_ignored_levels[i], level_data, file, line, message, my_datetime);
     }
+
+    return true;
 }
 
 /**
@@ -297,6 +350,7 @@ wll_advanced_log(WLL_Logger logger, WLL_Level level, char* file, uint64_t line, 
  * @param LOGGER logger handle
  * @param LEVEL log level
  * @param MSG log message
+ * @return bool indicating success
  */
 #define wll_log(LOGGER, LEVEL, MSG) wll_advanced_log(LOGGER, LEVEL, __FILE__, __LINE__, MSG, NULL)
 
