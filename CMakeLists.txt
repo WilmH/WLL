@@ -8,19 +8,18 @@ set(ZIP_FILES
     CMakeLists.txt
     LICENSE
     README.md
-    wll.h
 )
 # Create build directory for zip file
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/build)
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/build/include)
 
 add_custom_target(release
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/build
-    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/${ZIP_FILES} .
-    COMMAND ${CMAKE_COMMAND} -E tar "-czfv" "${CMAKE_CURRENT_SOURCE_DIR}/build/${ZIP_NAME}" ${ZIP_FILES}
+    COMMAND ${CMAKE_COMMAND} -E copy ${ZIP_FILES} ${CMAKE_CURRENT_BINARY_DIR}/build
+    COMMAND ${CMAKE_COMMAND} -E tar "-czfv" "${CMAKE_CURRENT_SOURCE_DIR}/build/${ZIP_NAME}" ${ZIP_FILES} include/
     COMMENT "Making release..."
 )
 
-configure_file(include/wll.h build/wll.h)
+configure_file(include/wll.h build/include/wll.h)
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/build/wll.h DESTINATION include)
 
