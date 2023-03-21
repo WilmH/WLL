@@ -139,7 +139,7 @@ wll_log(logger, new_level, "Message!");
 
 ### Names
 
-Level names are stored as simple string literals.  The maximum length is controlled by `WLL_MAX_STRING_LENGTH`
+Level names are stored as simple null-terminated strings.  The maximum length is controlled by `WLL_MAX_STRING_LENGTH`
 
 ### Colors
 
