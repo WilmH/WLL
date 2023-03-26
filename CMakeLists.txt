@@ -21,5 +21,5 @@ add_custom_target(release
 
 configure_file(include/wll.h build/include/wll.h)
 
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/build/wll.h DESTINATION include)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/build/include/wll.h DESTINATION include)
 
